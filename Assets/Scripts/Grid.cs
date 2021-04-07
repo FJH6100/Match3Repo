@@ -30,6 +30,7 @@ public class Grid : MonoBehaviour
     public GameObject bgPrefab;
     public GameObject pathPrefab;
     private GamePiece[,] pieces;
+    private GameObject[,] bgArray;
     public float fillTime;
     private bool inverse = false;
     [System.Serializable]
@@ -43,6 +44,8 @@ public class Grid : MonoBehaviour
 
     private GamePiece pressedPiece;
     private GamePiece enteredPiece;
+    private Color32 bgColor = new Color32(128, 128, 128, 255);
+    private Color32 pathColor = new Color32(70, 255, 255, 255);
 
     private int currentFoxLocation = 0;
 
@@ -58,7 +61,8 @@ public class Grid : MonoBehaviour
             if (!piecePrefabDict.ContainsKey(p.type))
                 piecePrefabDict.Add(p.type,p.prefab);
         }
-        
+
+        bgArray = new GameObject[xDim, yDim];
         for (int x = 0; x < xDim; x++)
         {
             for (int y = 0; y < yDim; y++)
@@ -67,11 +71,13 @@ public class Grid : MonoBehaviour
                 if (myPath.Contains(new KeyValuePair<int, int>(x, y)))
                 {
                     background = (GameObject)Instantiate(pathPrefab, GetWorldPosition(x, y, 0f), Quaternion.identity);
+                    bgArray[x, y] = background;
                     continue;
                 }
 
                 background = (GameObject)Instantiate(bgPrefab, GetWorldPosition(x, y, 0f), Quaternion.identity);
                 background.transform.parent = transform;
+                bgArray[x, y] = background;
             }
         }
 
@@ -294,15 +300,6 @@ public class Grid : MonoBehaviour
 
                 ClearAllValidMatches();
 
-                //if (piece1.Type == PieceType.ROW_CLEAR || piece1.Type == PieceType.COLUMN_CLEAR)
-                //    ClearPiece(piece1.X, piece1.Y);
-
-                //if (piece2.Type == PieceType.ROW_CLEAR || piece2.Type == PieceType.COLUMN_CLEAR)
-                //    ClearPiece(piece2.X, piece2.Y);
-
-                pressedPiece = null;
-                enteredPiece = null;
-
                 StartCoroutine(Fill());
             }
             else
@@ -315,18 +312,36 @@ public class Grid : MonoBehaviour
 
     public void PressPiece(GamePiece piece)
     {
-        pressedPiece = piece;
+        if (pressedPiece == null)
+        {
+            pressedPiece = piece;
+            bgArray[piece.X, piece.Y].GetComponent<SpriteRenderer>().color = Color.yellow;
+        }
+        else
+        {
+            enteredPiece = piece;
+            ReleasePiece();
+        }
     }
-    public void EnterPiece(GamePiece piece)
-    {
-        enteredPiece = piece;
-    }
+    
     public void ReleasePiece()
     {
+        if (myPath.Contains(new KeyValuePair<int, int>(pressedPiece.X, pressedPiece.Y)))
+        {
+            bgArray[pressedPiece.X, pressedPiece.Y].GetComponent<SpriteRenderer>().color = pathColor;
+            Debug.Log("Path");
+        }
+        else
+        {
+            bgArray[pressedPiece.X, pressedPiece.Y].GetComponent<SpriteRenderer>().color = bgColor;
+            Debug.Log("BG");
+        }
         if (IsAdjacent(pressedPiece,enteredPiece) && pressedPiece.Type != PieceType.FOX && enteredPiece.Type != PieceType.FOX)
         {
             SwapPieces(pressedPiece, enteredPiece);
         }
+        pressedPiece = null;
+        enteredPiece = null;
     }
 
     public List<GamePiece> GetMatch(GamePiece piece, int newX, int newY)
@@ -617,7 +632,6 @@ public class Grid : MonoBehaviour
         {           
             if (pieces[i, row].IsClearable())
             {
-                Debug.Log("Row " + row);
                 ClearPiece(i, row);
             }
         }
@@ -629,7 +643,6 @@ public class Grid : MonoBehaviour
         {           
             if (pieces[column, i].IsClearable())
             {
-                Debug.Log("Column " + column);
                 ClearPiece(column, i);
             }
         }

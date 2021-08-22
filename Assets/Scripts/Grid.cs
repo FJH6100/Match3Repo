@@ -49,6 +49,8 @@ public class Grid : MonoBehaviour
 
     private int currentFoxLocation = 0;
 
+    public bool mousePressed = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -124,7 +126,7 @@ public class Grid : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //Debug.Log(enteredPiece.name);
     }
 
     public IEnumerator Fill()
@@ -323,25 +325,34 @@ public class Grid : MonoBehaviour
             ReleasePiece();
         }
     }
-    
+
+    public void EnterPiece(GamePiece piece)
+    {
+        enteredPiece = piece;
+    }
+
     public void ReleasePiece()
     {
-        if (myPath.Contains(new KeyValuePair<int, int>(pressedPiece.X, pressedPiece.Y)))
+        if (enteredPiece != null && pressedPiece != null)
         {
-            bgArray[pressedPiece.X, pressedPiece.Y].GetComponent<SpriteRenderer>().color = pathColor;
-            Debug.Log("Path");
+            if (pressedPiece != enteredPiece)
+            {
+                if (myPath.Contains(new KeyValuePair<int, int>(pressedPiece.X, pressedPiece.Y)))
+                {
+                    bgArray[pressedPiece.X, pressedPiece.Y].GetComponent<SpriteRenderer>().color = pathColor;
+                }
+                else
+                {
+                    bgArray[pressedPiece.X, pressedPiece.Y].GetComponent<SpriteRenderer>().color = bgColor;
+                }
+                if (IsAdjacent(pressedPiece, enteredPiece) && pressedPiece.Type != PieceType.FOX && enteredPiece.Type != PieceType.FOX)
+                {
+                    SwapPieces(pressedPiece, enteredPiece);
+                }
+                pressedPiece = null;
+                enteredPiece = null;
+            }
         }
-        else
-        {
-            bgArray[pressedPiece.X, pressedPiece.Y].GetComponent<SpriteRenderer>().color = bgColor;
-            Debug.Log("BG");
-        }
-        if (IsAdjacent(pressedPiece,enteredPiece) && pressedPiece.Type != PieceType.FOX && enteredPiece.Type != PieceType.FOX)
-        {
-            SwapPieces(pressedPiece, enteredPiece);
-        }
-        pressedPiece = null;
-        enteredPiece = null;
     }
 
     public List<GamePiece> GetMatch(GamePiece piece, int newX, int newY)

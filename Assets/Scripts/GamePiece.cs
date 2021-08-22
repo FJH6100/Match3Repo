@@ -71,7 +71,11 @@ public class GamePiece : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetMouseButtonDown(0))
+        {
+            grid.mousePressed = true;
+        }
+
     }
 
     public void Init(int _x, int _y, Grid _grid, Grid.PieceType _type)
@@ -85,6 +89,23 @@ public class GamePiece : MonoBehaviour
     private void OnMouseDown()
     {
         grid.PressPiece(this);
+    }
+
+    private void OnMouseEnter()
+    {
+        if (grid.mousePressed)
+        {
+            grid.EnterPiece(this);
+            grid.mousePressed = false;
+        }
+        //else
+        //    Debug.Log("Mouse not held.");
+    }
+
+    private void OnMouseUp()
+    {
+        grid.ReleasePiece();
+        grid.mousePressed = false;
     }
 
 

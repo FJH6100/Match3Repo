@@ -39,7 +39,14 @@ public class Grid : MonoBehaviour
         public int xValue;
         public int yValue;
     }
-    public PathValues[] values;
+    [System.Serializable]
+    public struct ObstacleValues
+    {
+        public int xValue;
+        public int yValue;
+    }
+    public PathValues[] pathValues;
+    public ObstacleValues[] obstacleValues;
     public List<KeyValuePair<int,int>> myPath;
 
     private GamePiece pressedPiece;
@@ -49,13 +56,14 @@ public class Grid : MonoBehaviour
 
     private int currentFoxLocation = 0;
 
+    [HideInInspector]
     public bool mousePressed = false;
 
     // Start is called before the first frame update
     void Start()
     {
         myPath = new List<KeyValuePair<int, int>>();
-        foreach (PathValues pv in values)
+        foreach (PathValues pv in pathValues)
             myPath.Add(new KeyValuePair<int, int>(pv.xValue, pv.yValue));
         piecePrefabDict = new Dictionary<PieceType, GameObject>();
         foreach (PiecePrefab p in piecePrefabs)
@@ -94,39 +102,13 @@ public class Grid : MonoBehaviour
         Destroy(pieces[myPath[0].Key,myPath[0].Value].gameObject);
         SpawnNewPiece(myPath[0].Key, myPath[0].Value, PieceType.FOX);
 
-        Destroy(pieces[4, 0].gameObject);
-        SpawnNewPiece(4, 0, PieceType.OBSTACLE);
+        foreach (ObstacleValues ov in obstacleValues)
+        {
+            Destroy(pieces[ov.xValue, ov.yValue].gameObject);
+            SpawnNewPiece(ov.xValue, ov.yValue, PieceType.OBSTACLE);
+        }
 
-        Destroy(pieces[4, 1].gameObject);
-        SpawnNewPiece(4, 1, PieceType.OBSTACLE);
-
-        Destroy(pieces[4, 2].gameObject);
-        SpawnNewPiece(4, 2, PieceType.OBSTACLE);
-
-        Destroy(pieces[4, 3].gameObject);
-        SpawnNewPiece(4, 3, PieceType.OBSTACLE);
-
-        Destroy(pieces[4, 4].gameObject);
-        SpawnNewPiece(4, 4, PieceType.OBSTACLE);
-
-        Destroy(pieces[4, 5].gameObject);
-        SpawnNewPiece(4, 5, PieceType.OBSTACLE);
-
-        Destroy(pieces[4, 6].gameObject);
-        SpawnNewPiece(4, 6, PieceType.OBSTACLE);
-
-        Destroy(pieces[4, 7].gameObject);
-        SpawnNewPiece(4, 7, PieceType.OBSTACLE);
-
-        Destroy(pieces[4, 8].gameObject);
-        SpawnNewPiece(4, 8, PieceType.OBSTACLE);
         StartCoroutine(Fill());
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        //Debug.Log(enteredPiece.name);
     }
 
     public IEnumerator Fill()
